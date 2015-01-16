@@ -7,8 +7,8 @@ LIST_PRODUCERS=listProducers.txt
 LIST_MERGERS=$LIST_PRODUCERS
 ALL_NODES=all_nodes.txt
 
-LUMI_LENGTH_MEAN=9.0
-LUMI_LENGTH_SIGMA=9.0
+LUMI_LENGTH_MEAN=0.75
+LUMI_LENGTH_SIGMA=1.0
 
 ## Top-level directory for the test management and control
 MASTER_BASE=/hwtests/master
@@ -30,9 +30,8 @@ source $MASTER_BASE/hwtest/tools.sh
 function launch_main {
     echo "+ Launching the test ..."
     clean_up
-    launch_merger 100 optionC bu-c2d38-27-01 macro
-    launch_mergers 100 optionC
-    launch_producers run100.cfg 1
+    #launch_run 100
+    #clone_and_launch_run 100 101 
     echo "+ ... done. Finished launching the test."
 } # launch_main
 
@@ -43,6 +42,39 @@ function clean_up {
     delete_previous_runs
     delete_previous_code
 } # clean_up
+
+
+#-------------------------------------------------------------------------------
+function launch_run {
+    RUN_NUMBER=$1
+    OPTION=${2:-optionC}
+    MACRO_MERGER_NODE=${3:-bu-c2d38-27-01}
+    CONFIG_FILE=run${RUN_NUMBER}.cfg
+    DO_SUBFOLDER=1
+    launch_merger $RUN_NUMBER $OPTION $MACRO_MERGER_NODE macro
+    launch_mergers $RUN_NUMBER $OPTION
+    launch_producers $CONFIG_FILE $DO_SUBFOLDER
+} # launch_run
+
+
+#-------------------------------------------------------------------------------
+function clone_and_launch_run {
+    SRC_RUN=${1:-100}
+    DST_RUN=${2:-101}
+    clone_run $SRC_RUN $DST_RUN
+    launch_run $DST_RUN
+} # clone_and_launch_run
+
+
+#-------------------------------------------------------------------------------
+function clone_run {
+    SRC_RUN=${1}
+    DST_RUN=${2}
+    SRC_CFG=run${SRC_RUN}.cfg
+    DST_CFG=run${DST_RUN}.cfg
+    cp $SRC_CFG $DST_CFG
+    sed -i "s/runnumber = \"$SRC_RUN\"/runnumber = \"$DST_RUN\"/"
+} # clone_run
 
 
 #-------------------------------------------------------------------------------
