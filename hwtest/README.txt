@@ -165,12 +165,65 @@ Max expected throughput: 215 GB / 295 s = 0.73 GB/s
     Average throughput: 1089 GB / 290 s = 3.76 GB/s
   * v1.5 more lumis
     Total / closed / opened files: 1000 / 969 (96%) / 31 (4%)
-    LUMI_LENGTH_MEAN = 3.0
-number of producers: 7
-Max expected throughput: 1094 GB / 150 s = 7.29 GB/s
+    Max expected throughput: 1094 GB / 150 s = 7.29 GB/s
     Average throughput: 2179 GB / 390 s = 5.59 GB/s
   * v1.6  ls=5000
     Total / closed / opened files: 50000 / 1043 (2%) / 48957 (98%)
     Max expected throughput: 1094 GB / 150 s = 7.29 GB/s
     Average throughput: 64512 GB / 15164 s = 4.25 GB/s
     
+  * v1.7 ls=10, updated merger code to use pool.join and have checksum switch
+    (checksum is on by default), updated file sizes 
+    to have more realistic BU inputs
+    Total / closed / opened files: 100 / 100 (100%) / 0 (0%)
+    Average throughput: 66 GB / 85 s = 0.78 GB/s
+
+  * v1.8 ls=50 
+    Total / closed / opened files: 499 / 499 (100%) / 0 (0%)
+    Max expected throughput: 1094 GB / 150 s = 7.29 GB/s
+    Average throughput: 329 GB / 428 s = 0.77 GB/s
+
+  * v1.9 turned check summing off
+    Total / closed / opened files: 500 / 500 (100%) / 0 (0%)
+    Max expected throughput: 1094 GB / 150 s = 7.29 GB/s
+    Average throughput: 329 GB / 154 s = 2.14 GB/s
+
+  * v1.10 LS=1.5s
+    Total / closed / opened files: 500 / 500 (100%) / 0 (0%)
+    Max expected throughput: 1094 GB / 75 s = 14.58 GB/s
+    Average throughput: 329 GB / 89 s = 3.70 GB/s
+
+  * v1.11 LS=1s
+    Total / closed / opened files: 500 / 500 (100%) / 0 (0%)
+    Max expected throughput: 1094 GB / 50 s = 21.88 GB/s
+    Average throughput: 329 GB / 84 s = 3.92 GB/s
+
+  * v1.12 LS=0.75s
+    Total / closed / opened files: 500 / 500 (100%) / 0 (0%)
+    Max expected throughput: 1094 GB / 38 s = 29.17 GB/s
+    Average throughput: 329 GB / 85 s = 3.87 GB/s
+
+  * v1.13 #LS = 100
+    Total / closed / opened files: 1000 / 1000 (100%) / 0 (0%)
+    Max expected throughput: 1094 GB / 38 s = 29.17 GB/s
+    Average throughput: 657 GB / 143 s = 4.59 GB/s
+
+  * v1.14 #LS = 200
+    Total / closed / opened files: 2000 / 2000 (100%) / 0 (0%)
+    Max expected throughput: 1094 GB / 38 s = 29.17 GB/s
+    Average throughput: 1313 GB / 270 s = 4.86 GB/s
+
+  * v1.15 #LS = 500
+    Total / closed / opened files: 5000 / 5000 (100%) / 0 (0%)
+    Max expected throughput: 1094 GB / 38 s = 29.17 GB/s
+    Average throughput: 3282 GB / 998 s = 3.29 GB/s
+
+  * v1.16 max threads = 20
+    Total / closed / opened files: 5000 / 5000 (100%) / 0 (0%)
+    Max expected throughput: 1094 GB / 38 s = 29.17 GB/s
+    Average throughput: 3282 GB / 1179 s = 2.78 GB/s
+
+  * v1.17 #LS = 5000, max threads = 30
+    Total / closed / opened files: 50000 / 50000 (100%) / 0 (0%)
+    Max expected throughput: 1094 GB / 38 s = 29.17 GB/s
+    Average throughput: 32814 GB / 20705 s = 1.58 GB/s
