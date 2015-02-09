@@ -77,7 +77,7 @@ def mergeFilesA(outputMergedFolder, outputDQMMergedFolder, outputECALMergedFolde
       specialStreams = True
 
    if (mergeType == "macro" and specialStreams == False):
-      iniName = "../" + fileNameString[0] + "_ls0000_" + fileNameString[2] + "_" + outputEndName + ".ini"
+      iniName = fileNameString[0] + "_ls0000_" + fileNameString[2] + "_" + "StorageManager" + ".ini"
       iniNameFullPath = os.path.join(outputMergedFolder, iniName)
       if os.path.exists(iniNameFullPath):
 
@@ -101,6 +101,8 @@ def mergeFilesA(outputMergedFolder, outputDQMMergedFolder, outputECALMergedFolde
          fout.close()
       else:
          log.error("BIG PROBLEM, ini file not found!: {0}".format(iniNameFullPath))
+	 msg = "BIG PROBLEM, ini file not found!: %s" % (iniNameFullPath)
+	 raise RuntimeError, msg
 
    filenames = [inputDataFolder + "/" + word_in_list for word_in_list in files]
 

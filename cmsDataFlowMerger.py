@@ -27,15 +27,16 @@ Do actual merging
 
 def esMonitorMapping(esServerUrl,esIndexName,numberOfShards,numberOfReplicas,debug):
 # subroutine which creates index and mappings in elastic search database
+   indexExists = False
    # check if the index exists:
    try:
       checkIndexResponse=requests.get(esServerUrl+'/'+esIndexName+'/_stats/_shards/')
       if '_shards' in json.loads(checkIndexResponse.text):
          if(float(debug) >= 10): log.info('found index '+esIndexName+' containing '+str(json.loads(checkIndexResponse.text)['_shards']['total'])+' total shards')
-         indexExists=True
+         indexExists = True
       else:
          if(float(debug) >= 10): log.info('did not find existing index '+esIndexName+', attempting to create it now...')
-         indexExists=False 
+         indexExists = False
    except requests.exceptions.ConnectionError as e:
       log.error('esMonitorMapping: Could not connect to ElasticSearch database!')
    if indexExists:
@@ -89,7 +90,7 @@ def esMonitorMapping(esServerUrl,esIndexName,numberOfShards,numberOfReplicas,deb
                'processed'     :{'type':'integer'},
                'accepted'      :{'type':'integer'},
                'errorEvents'   :{'type':'integer'},
-               'size'          :{'type':'integer'},
+               'size'          :{'type':'long'},
             }
          }
       }
@@ -106,7 +107,7 @@ def esMonitorMapping(esServerUrl,esIndexName,numberOfShards,numberOfReplicas,deb
                'processed'     :{'type':'integer'},
                'accepted'      :{'type':'integer'},
                'errorEvents'   :{'type':'integer'},
-               'size'          :{'type':'integer'},
+               'size'          :{'type':'long'},
             }
          }
       }
@@ -408,7 +409,7 @@ def doTheMerging(paths_to_watch, path_eol, mergeType, streamType, debug, outputM
    # Maximum number with pool option (< 0 == always)
    nWithPollMax = -1
    # Maximum number of threads to be allowed with the pool option
-   nThreadsMax  = 50
+   nThreadsMax  = 100
    # Number of loops
    nLoops = 0
    while 1:
@@ -508,36 +509,29 @@ def doTheMerging(paths_to_watch, path_eol, mergeType, streamType, debug, outputM
 
           	if((mergeType == "mini") or (optionMerging == "optionA") or ("DQM" in fileIniString[2]) or ("streamError" in fileIniString[2]) or ("streamHLTRates" in fileIniString[2]) or ("streamL1Rates" in fileIniString[2])):
           	    theIniOutputFolder = outputSMMergedFolder
-	  	    if((optionMerging == "optionA") or ("DQM" in fileIniString[2]) or ("streamError" in fileIniString[2]) or ("streamHLTRates" in fileIniString[2]) or ("streamL1Rates" in fileIniString[2])):
-          	       theIniOutputFolder = outputMergedFolder
+	  	    #if((optionMerging == "optionA") or ("DQM" in fileIniString[2]) or ("streamError" in fileIniString[2]) or ("streamHLTRates" in fileIniString[2]) or ("streamL1Rates" in fileIniString[2])):
+          	    #   theIniOutputFolder = outputMergedFolder
 
           	if (is_completed(inputName) == True and (os.path.getsize(inputName) > 0 or fileIniString[2] == "streamError" or fileIniString[2] == "streamDQMHistograms")):
 	     	   # init name: runxxx_ls0000_streamY_HOST.ini
 	     	   inputNameString = afterString[i].split('_')
           	   # outputIniName will be modified in the next merging step immediately, while outputIniNameToCompare will stay forever
-	     	   outputIniName	  = theIniOutputFolder + "/../" + inputNameString[0] + "_ls0000_" + inputNameString[2] + "_" + outputEndName    + ".ini"
-          	   outputIniNameToCompare = theIniOutputFolder +   "/"  + inputNameString[0] + "_ls0000_" + inputNameString[2] + "_" + "StorageManager" + ".ini"
+	     	   outputIniNameTEMP          = theIniOutputFolder +    "/" + inputNameString[0] + "_ls0000_" + inputNameString[2] + "_" +    outputEndName + ".ini_TMP1"
+	     	   outputIniName              = theIniOutputFolder + "/../" + inputNameString[0] + "_ls0000_" + inputNameString[2] + "_" +    outputEndName + ".ini"
+          	   outputIniNameToCompareTEMP = theIniOutputFolder +    "/" + inputNameString[0] + "_ls0000_" + inputNameString[2] + "_" +    outputEndName + ".ini_TMP2"
+          	   outputIniNameToCompare     = theIniOutputFolder +    "/" + inputNameString[0] + "_ls0000_" + inputNameString[2] + "_" + "StorageManager" + ".ini"
 	     	   inputNameRename  = inputName.replace(".ini","_TEMP.ini")
           	   shutil.move(inputName,inputNameRename)
           	   if(float(debug) >= 10): log.info("iniFile: {0}".format(afterString[i]))
 	  	   # getting the ini file, just once per stream
-	     	   if not os.path.exists(outputIniName) or os.path.getsize(outputIniName) == 0:
+	     	   if (not os.path.exists(outputIniNameToCompare) or (os.path.exists(outputIniNameToCompare) and os.path.getsize(outputIniNameToCompare) == 0)):
 	     	      try:
-          		 with open(outputIniName, 'a', 1) as file_object:
+          		 with open(outputIniNameToCompareTEMP, 'a', 1) as file_object:
           		    fcntl.flock(file_object, fcntl.LOCK_EX)
-	     		    shutil.copy(inputNameRename,outputIniName)
+	     		    shutil.copy(inputNameRename,outputIniNameToCompareTEMP)
           		    fcntl.flock(file_object, fcntl.LOCK_UN)
 	     		 file_object.close()
-	     	      except OSError, e:
-	     		 log.warning("Looks like the outputIniName file {0} has just been created by someone else...".format(outputIniName))
-
-	     	   if not os.path.exists(outputIniNameToCompare) or os.path.getsize(outputIniNameToCompare) == 0:
-	     	      try:
-          		 with open(outputIniNameToCompare, 'a', 1) as file_object:
-          		    fcntl.flock(file_object, fcntl.LOCK_EX)
-	     		    shutil.copy(inputNameRename,outputIniNameToCompare)
-          		    fcntl.flock(file_object, fcntl.LOCK_UN)
-	     		 file_object.close()
+                         shutil.move(outputIniNameToCompareTEMP,outputIniNameToCompare)
 	     	      except OSError, e:
 	     		 log.warning("Looks like the outputIniNameToCompare file {0} has just been created by someone else...".format(outputIniNameToCompare))
 
@@ -546,6 +540,25 @@ def doTheMerging(paths_to_watch, path_eol, mergeType, streamType, debug, outputM
           	      try:
 	     		 if filecmp.cmp(outputIniNameToCompare,inputNameRename) == False:
 	     		    log.warning("ini files: {0} and {1} are different!!!".format(outputIniNameToCompare,inputNameRename))
+          	      except IOError, e:
+          		    log.error("Try to move a .ini to a _TEMP.ini, disappeared under my feet. Carrying on...")
+
+	     	   if (not os.path.exists(outputIniName) or (os.path.exists(outputIniName) and os.path.getsize(outputIniName) == 0)):
+	     	      try:
+          		 with open(outputIniNameTEMP, 'a', 1) as file_object:
+          		    fcntl.flock(file_object, fcntl.LOCK_EX)
+	     		    shutil.copy(inputNameRename,outputIniNameTEMP)
+          		    fcntl.flock(file_object, fcntl.LOCK_UN)
+	     		 file_object.close()
+                         shutil.move(outputIniNameTEMP,outputIniName)
+	     	      except OSError, e:
+	     		 log.warning("Looks like the outputIniName file {0} has just been created by someone else...".format(outputIniName))
+
+	  	   # otherwise, checking if they are identical
+	  	   else:
+          	      try:
+	     		 if filecmp.cmp(outputIniName,inputNameRename) == False:
+	     		    log.warning("ini files: {0} and {1} are different!!!".format(outputIniName,inputNameRename))
           	      except IOError, e:
           		    log.error("Try to move a .ini to a _TEMP.ini, disappeared under my feet. Carrying on...")
 
@@ -558,27 +571,20 @@ def doTheMerging(paths_to_watch, path_eol, mergeType, streamType, debug, outputM
 		      inputJsdName  = inputDataFolder + "/"  + inputJsdNameString[0] + "_ls0000_" + inputJsdNameString[2] + ".jsd"
 		      if(os.path.exists(inputJsdName)):
           		 # outputIniName will be modified in the next merging step immediately, while outputIniNameToCompare will stay forever
-	     		 outputIniName          = theIniOutputFolder + "/../" + inputJsdNameString[0] + "_ls0000_" + inputJsdNameString[2] + ".jsd"
-          		 outputIniNameToCompare = theIniOutputFolder +   "/"  + inputJsdNameString[0] + "_ls0000_" + inputJsdNameString[2] + ".jsd"
+	     		 outputIniNameTEMP          = outputMergedFolder +    "/" + inputJsdNameString[0] + "_ls0000_" + inputJsdNameString[2] + "_" +    outputEndName  + ".jsd_TMP1"
+	     		 outputIniName              = outputMergedFolder + "/../" + inputJsdNameString[0] + "_ls0000_" + inputJsdNameString[2]  			 + ".jsd"
+          		 outputIniNameToCompareTEMP = outputMergedFolder +    "/" + inputJsdNameString[0] + "_ls0000_" + inputJsdNameString[2] + "_" +    outputEndName  + ".jsd_TMP2"
+          		 outputIniNameToCompare     = outputMergedFolder +    "/" + inputJsdNameString[0] + "_ls0000_" + inputJsdNameString[2]  			 + ".jsd"
           		 if(float(debug) >= 10): log.info("iniFile: {0}".format(afterString[i]))
 	  		 # getting the ini file, just once per stream
-	     		 if not os.path.exists(outputIniName) or os.path.getsize(outputIniName) == 0:
+	     		 if (not os.path.exists(outputIniNameToCompare) or (os.path.exists(outputIniNameToCompare) and os.path.getsize(outputIniNameToCompare) == 0)):
 	     		    try:
-          		       with open(outputIniName, 'a', 1) as file_object:
+          		       with open(outputIniNameToCompareTEMP, 'a', 1) as file_object:
           			  fcntl.flock(file_object, fcntl.LOCK_EX)
-	     			  shutil.copy(inputJsdName,outputIniName)
+	     			  shutil.copy(inputJsdName,outputIniNameToCompareTEMP)
           			  fcntl.flock(file_object, fcntl.LOCK_UN)
 	     		       file_object.close()
-	     		    except OSError, e:
-	     		       log.warning("Looks like the outputIniName-Rates file {0} has just been created by someone else...".format(outputIniName))
-
-	     		 if not os.path.exists(outputIniNameToCompare) or os.path.getsize(outputIniNameToCompare) == 0:
-	     		    try:
-          		       with open(outputIniNameToCompare, 'a', 1) as file_object:
-          			  fcntl.flock(file_object, fcntl.LOCK_EX)
-	     			  shutil.copy(inputJsdName,outputIniNameToCompare)
-          			  fcntl.flock(file_object, fcntl.LOCK_UN)
-	     		       file_object.close()
+                               shutil.move(outputIniNameToCompareTEMP,outputIniNameToCompare)
 	     		    except OSError, e:
 	     		       log.warning("Looks like the outputIniNameToCompare-Rates file {0} has just been created by someone else...".format(outputIniNameToCompare))
 
@@ -587,6 +593,25 @@ def doTheMerging(paths_to_watch, path_eol, mergeType, streamType, debug, outputM
           		    try:
 	     		       if filecmp.cmp(outputIniNameToCompare,inputJsdName) == False:
 	     			  log.warning("ini files: {0} and {1} are different!!!".format(outputIniNameToCompare,inputJsdName))
+          		    except IOError, e:
+          			  log.error("Try to move a .ini to a _TEMP.ini, disappeared under my feet. Carrying on...")
+
+	     		 if (not os.path.exists(outputIniName) or (os.path.exists(outputIniName) and os.path.getsize(outputIniName) == 0)):
+	     		    try:
+          		       with open(outputIniNameTEMP, 'a', 1) as file_object:
+          			  fcntl.flock(file_object, fcntl.LOCK_EX)
+	     			  shutil.copy(inputJsdName,outputIniNameTEMP)
+          			  fcntl.flock(file_object, fcntl.LOCK_UN)
+	     		       file_object.close()
+                               shutil.move(outputIniNameTEMP,outputIniName)
+	     		    except OSError, e:
+	     		       log.warning("Looks like the outputIniName-Rates file {0} has just been created by someone else...".format(outputIniName))
+
+	  		 # otherwise, checking if they are identical
+	  		 else:
+          		    try:
+	     		       if filecmp.cmp(outputIniName,inputJsdName) == False:
+	     			  log.warning("ini files: {0} and {1} are different!!!".format(outputIniName,inputJsdName))
           		    except IOError, e:
           			  log.error("Try to move a .ini to a _TEMP.ini, disappeared under my feet. Carrying on...")
 
@@ -615,7 +640,7 @@ def doTheMerging(paths_to_watch, path_eol, mergeType, streamType, debug, outputM
 	     if(float(debug) >= 50): log.info("inputJsonFile: {0}".format(inputJsonFile))
 
              # avoid empty files
-	     if(os.path.getsize(inputJsonFile) == 0): continue
+	     if(os.path.exists(inputJsonFile) and os.path.getsize(inputJsonFile) == 0): continue
 
              isFailed = False
              # moving the file to avoid issues
@@ -877,9 +902,9 @@ def doTheMerging(paths_to_watch, path_eol, mergeType, streamType, debug, outputM
 
           before = after
 
-      #if nLoops <= nWithPollMax or nWithPollMax < 0:
-      #   thePool.close()
-      #   thePool.join()
+      if nLoops <= nWithPollMax or nWithPollMax < 0:
+         thePool.close()
+         thePool.join()
 
 def start_merging(paths_to_watch, path_eol, mergeType, streamType, outputMerge, outputSMMerge, outputDQMMerge, outputECALMerge, doCheckSum, outputEndName, doRemoveFiles, optionMerging, esServerUrl, esIndexName, numberOfShards, numberOfReplicas, debug):
 
@@ -925,7 +950,7 @@ def start_merging(paths_to_watch, path_eol, mergeType, streamType, outputMerge, 
           os.makedirs(outputECALMerge)
        except OSError, e:
           log.warning("Looks like the directory {0} has just been created by someone else...".format(outputECALMerge))
-   
+
     if not (esServerUrl == '' or esIndexName==''):
         esMonitorMapping(esServerUrl,esIndexName,numberOfShards,numberOfReplicas,debug)
 
