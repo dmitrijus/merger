@@ -81,10 +81,16 @@ function clone_run {
 #------------------------------------------------------------------------------
 function delete_previous_runs {
     echo "++ Deleting previous runs ..."
-    ## Take just the first machine
+    ## Loop over all machines to delete the mini-merging inputs
+    for NODE in $(parse_machine_list $ALL_NODES); do
+        COMMAND="rm -rf $INPUT_BASE/{,*/}*merge*/run*"
+        echo_and_ssh "$NODE" "$COMMAND" 1
+    done
+    ## Take just the first machine for the cluster FS
     NODE=$(echo $(parse_machine_list $ALL_NODES) | awk '{print $1}')
-    COMMAND="rm -rf {$INPUT_BASE,$OUTPUT_BASE}/{,*/}*merge*/run*"
-    echo_and_ssh "$NODE" "$COMMAND"
+    COMMAND="rm -rf $OUTPUT_BASE/{,*/}*merge*/run*"
+    echo_and_ssh "$NODE" "$COMMAND" 1
+    echo_and_wait
     printf "++ ... done. Finished deleting previous runs.\n\n"
 } # delete_previous_runs
 
