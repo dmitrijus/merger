@@ -244,3 +244,22 @@ Max expected throughput: 215 GB / 295 s = 0.73 GB/s
     
   * v2.6 Test with bu-c2f16-[31-43]-01
     
+  * v2.7 Fixed clean up bug, parallelized clean up and producer launch, test
+    with 3 BUs only
+
+  * v2.8 Tried with 46 BUs
+
+  * v2.9 Customizing work areas for different users
+    Max expected throughput: 11 GB / 10 s = 1.12 GB/s
+    Average throughput: 9 GB / 18 s = 0.50 GB/s
+
+  * v2.10 Added more BUs
+    Total / closed / opened files: 20 / 20 (100%) / 0 (0%)
+    Max expected throughput: 38 GB / 10 s = 3.75 GB/s
+    Average throughput: 29 GB / 10 s = 2.90 GB/s
+
+  * v2.11 Refactored settings into env.sh
+    Total / closed / opened files: 20 / 20 (100%) / 0 (0%)
+    Max expected throughput: 28 GB / 10 s = 2.81 GB/s
+    Average throughput: 29 GB / 9 s = 3.22 GB/s
+

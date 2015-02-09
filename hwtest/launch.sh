@@ -2,37 +2,26 @@
 
 ## Source this script to launch the merging test
 
-LIST_PRODUCERS=listProducers.txt
-#LIST_MERGERS=listMergers.txt
-LIST_MERGERS=$LIST_PRODUCERS
-ALL_NODES=all_nodes.txt
-
-LUMI_LENGTH_MEAN=5
-LUMI_LENGTH_SIGMA=1.0
-
 ## Top-level directory for the test management and control
-MASTER_BASE=/nfshome0/veverka/lib/python/merger
-## Top level directory for the producer and merger scripts used during the test
-SLAVE_BASE=/hwtests/slave
-## Folder for the producer inputs
-#FROZEN_BASE=/home/cern/frozen # HDD
-FROZEN_BASE=/fff/ramdisk/hwtest/frozen # RAM disk
-## Top-level directory for the producer outputs / merger inputs
-INPUT_BASE=/fff/output/hwtest/inputs # local HDD
-## Top-level directory for the merger outputs
-OUTPUT_BASE=/store/lustre/benchmark
+MASTER_BASE="$(dirname $PWD)"
 
 ## Provides node_name, count_args, parse_machine_list, echo_and_ssh,
 ## echo_and_wait
 source $MASTER_BASE/hwtest/tools.sh
 
+## Defines LIST_PRODUCERS, LIST_MERGERS, ALL_NODES, USER, LUMI_LENGTH_MEAN,
+##      LUMI_LENGTH_SIGMA, MASTER_BASE, SLAVE_BASE, FROZEN_BASE, INPUT_BASE
+##      OUTPUT_BASE, RUN, OPTION, MACRO_MERGER_NODE
+source $MASTER_BASE/hwtest/env.sh
+
+
+
 #------------------------------------------------------------------------------
 function launch_main {
     echo "+ Launching the test ..."
     clean_up
-    #launch_producers run100.cfg 1
-    launch_run 100
-    #clone_and_launch_run 100 101 
+    #launch_producers run${RUN}.cfg 1
+    launch_run $RUN $OPTION $MACRO_MERGER_NODE
     echo "+ ... done. Finished launching the test."
 } # launch_main
 
@@ -49,33 +38,13 @@ function clean_up {
 function launch_run {
     RUN_NUMBER=$1
     OPTION=${2:-optionC}
-    MACRO_MERGER_NODE=${3:-bu-c2d38-27-01}
+    MY_MACRO_MERGER_NODE=${3:-mrg-c2f12-31-01}
     CONFIG_FILE=run${RUN_NUMBER}.cfg
     DO_SUBFOLDER=1
-    launch_merger $RUN_NUMBER $OPTION $MACRO_MERGER_NODE macro
+    launch_merger $RUN_NUMBER $OPTION $MY_MACRO_MERGER_NODE macro
     launch_mergers $RUN_NUMBER $OPTION
     launch_producers $CONFIG_FILE $DO_SUBFOLDER
 } # launch_run
-
-
-#------------------------------------------------------------------------------
-function clone_and_launch_run {
-    SRC_RUN=${1:-100}
-    DST_RUN=${2:-101}
-    clone_run $SRC_RUN $DST_RUN
-    launch_run $DST_RUN
-} # clone_and_launch_run
-
-
-#------------------------------------------------------------------------------
-function clone_run {
-    SRC_RUN=${1}
-    DST_RUN=${2}
-    SRC_CFG=run${SRC_RUN}.cfg
-    DST_CFG=run${DST_RUN}.cfg
-    cp $SRC_CFG $DST_CFG
-    sed -i "s/runnumber = \"$SRC_RUN\"/runnumber = \"$DST_RUN\"/"
-} # clone_run
 
 
 #------------------------------------------------------------------------------

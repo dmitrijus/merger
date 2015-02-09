@@ -12,8 +12,8 @@ def main():
     lumi_length_mean    = get_lumi_length_mean()
     number_of_producers = get_number_of_producers()
     number_of_files_per_ls = 12   # NumberOfFilesPerLS in makeFiles.py
-    total_file_size_in_mb = 80.   # for all streams
-    number_of_ls = 2              # ls in run100.cfg
+    total_file_size_in_mb = 60.   # for all streams
+    number_of_ls = 2              # ls in run200.cfg
 
     bandwidth_per_ls_in_gb = (number_of_producers *
                               number_of_files_per_ls *
@@ -33,7 +33,7 @@ def get_lumi_length_mean():
     Returns the value of the LUMI_LENGTH_MEAN in launch.sh
     '''
     subdir = 'hwtest'
-    basename = 'launch.sh'
+    basename = 'env.sh'
     variabe_name = 'LUMI_LENGTH_MEAN'
     path = os.path.join(_base_path, subdir, basename)
     try:

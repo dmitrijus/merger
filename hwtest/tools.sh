@@ -80,7 +80,7 @@ function kill_producers {
 
 #-------------------------------------------------------------------------------
 function wassh_list {
-    FNAME=${1?all_nodes.txt}
+    FNAME=${1:-all_nodes.txt}
     echo $(echo $(parse_machine_list $FNAME) | tr ' ' ',')
 }
 

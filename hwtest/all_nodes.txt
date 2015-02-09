@@ -14,12 +14,13 @@
 ## 10.180.7.44@tcp0,10.180.7.45@tcp0:/cmsfs on /store/lustre type lustre (rw,flock)
 ## But Lavinia says it's OK
 ##
+mrg-c2f12-31-01 ## Use for macro-merger and master
 # bu-c2d38-07-01 ## No connection
 # bu-c2d38-09-01 ## No connection
 # bu-c2d38-11-01 ## No connection
-bu-c2d38-27-01
-bu-c2d38-29-01
-bu-c2d38-31-01
+# bu-c2d38-27-01 ## Zeynep
+# bu-c2d38-29-01 ## Zeynep
+# bu-c2d38-31-01 ## Zeynep
 bu-c2d38-35-01
 bu-c2d38-37-01
 bu-c2d38-39-01

@@ -1,9 +1,7 @@
 #!/bin/bash
 source tools.sh
-NODES=$(parse_machine_list all_nodes.txt)
-MASTER_BASE=/nfshome0/veverka/lib/python/merger
-SLAVE_BASE=/hwtests/slave
-OUTPUT_BASE=/nfshome0/veverka/daq/benchmark/logs
+source env.sh
+NODES=$(parse_machine_list $ALL_NODES)
 SUMMARY_FILE=README.txt
 
 MAJOR_VERSION_NUMBER=2
