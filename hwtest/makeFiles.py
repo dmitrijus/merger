@@ -39,16 +39,11 @@ def doFiles(RUNNumber, seeds, timeEnd, rate, path_to_make, streamName, contentIn
 
       if theNLoop == 1:
          fileJSONNameFullPath = "%sunmergedMON/run%d/run%d_ls%d_EoLS.jsn" % (path_to_make,RUNNumber,RUNNumber,LSNumber)
-         if not os.path.exists(fileJSONNameFullPath):
-            try:
-               with open(fileJSONNameFullPath, 'w') as theFileJSONName:
-                  fcntl.flock(theFileJSONName, fcntl.LOCK_EX)
-                  theFileJSONName.write(json.dumps({'data': (nInput*int(NumberOfFilesPerLS), nOutput*int(NumberOfFilesPerLS), nInput*int(NumberOfFilesPerLS)*int(theTotalBUs))}))
-                  fcntl.flock(theFileJSONName, fcntl.LOCK_UN)
-               theFileJSONName.close()
-               ###os.chmod(fileJSONNameFullPath, 0666)
-            except OSError, e:
-               print "Looks like the file " + fileJSONNameFullPath + " has just been created by someone else..."
+         try:
+           with open(fileJSONNameFullPath, 'w') as theFileJSONName:
+              theFileJSONName.write(json.dumps({'data': (nInput*int(NumberOfFilesPerLS), nOutput*int(NumberOfFilesPerLS), nInput*int(NumberOfFilesPerLS)*int(theTotalBUs))}))
+         except OSError, e:
+           print "Looks like the file " + fileJSONNameFullPath + " has just been created by someone else..."
          fileBoLSFullPath = "%sunmergedDATA/run%d/run%d_ls%d_%s_BoLS.jsn" % (path_to_make,RUNNumber,RUNNumber,LSNumber,streamName)
 	 msg = "touch %s" % fileBoLSFullPath
 	 os.system(msg)
@@ -58,7 +53,7 @@ def doFiles(RUNNumber, seeds, timeEnd, rate, path_to_make, streamName, contentIn
 
       # making a symbolic link (sysadmins don't like it)
       #msg = "ln -s %s %s" %(contentInputFile,fileOutputNameFullPath)
-      #os.system(msg)
+      #os. system(msg)
       # creating/copying the file (default)
       with open(fileOutputNameFullPath, 'w') as thefile:
           thefile.write(contentInputFile)
