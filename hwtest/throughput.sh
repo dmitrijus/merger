@@ -2,9 +2,9 @@ source tools.sh
 RUN=100
 OUTPUT_BASE=/mnt/cmsfs/benchmark
 
-BANDWIDTH_IN_GB=64512
-#BANDWIDTH_IN_GB=$(du -sk $OUTPUT_BASE/mergerMacro/run${RUN} -B 1G |\
-#    awk '{print $1}')
+#BANDWIDTH_IN_GB=64512
+BANDWIDTH_IN_GB=$(du -sk $OUTPUT_BASE/mergerMacro/run${RUN} -B 1G |\
+    awk '{print $1}')
 echo "Volume (GB): $(quote "$BANDWIDTH_IN_GB")"
 START=$(grep "writing ls 0" $LOGS_BASE/prod*run${RUN}*.log |\
             sed 's/^.*log://' | sort | head -1 | awk '{printf $1}')

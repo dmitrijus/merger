@@ -227,3 +227,20 @@ Max expected throughput: 215 GB / 295 s = 0.73 GB/s
     Total / closed / opened files: 50000 / 50000 (100%) / 0 (0%)
     Max expected throughput: 1094 GB / 38 s = 29.17 GB/s
     Average throughput: 32814 GB / 20705 s = 1.58 GB/s
+
+  * v2.0 First test with large setup
+
+  * v2.1 First test with many BUs including merging
+
+  * v2.2 Investigating the merged file size
+    Average throughput: 64512 GB / 8 s = 8064.00 GB/s
+
+  * v2.3 NumberOfFilesPerLS = 1, #BUs: 23
+
+  * v2.4 Another merging test with 55 BUs
+    All streams seem to have worked except for the stream A
+
+  * v2.5 Dummy 
+    
+  * v2.6 Test with bu-c2f16-[31-43]-01
+    

@@ -1,3 +1,22 @@
+## Commands to generate this list:
+## $ BUS_C2D38=$(echo bu-c2d38-{07,09,11,27,29,31,35,37,39,41}-01)
+## $ BUS_C2D41=$(echo bu-c2d41-{07,09,11,13,17,19,21,23,25,27,29,31,35,37,39,41}-01)
+## $ BUS_C2E18=$(echo bu-c2e18-{09,11,13,17,19,21,23,25,27,29,31,35,37,39,41,43}-01)
+## $ BUS_C2F13=$(echo bu-c2f13-{21,23,25,27,29,31}-01)
+## $ BUS_C2F16=$(echo bu-c2f16-{09,11,13,17,19,21,23,25,27,29,31,35,37,39,41,43}-01)
+## $ echo $BUS_C2D38 $BUS_C2D41 $BUS_C2E18 $BUS_C2F13 $BUS_C2F16 | tr ' ' '\n'
+## Alternatively:
+## $ host -l cms | egrep '^bu-' | awk '{print $1}'  | sed 's/\.cms//'
+##
+## bu-c2d41-41-01 has a different mount config:
+## 10.180.7.44@tcp0:10.180.2.185@o2ib1:10.180.7.45@tcp0:10.180.2.186@o2ib1:/cmsfs on /store/lustre type lustre (rw,flock)
+## than all the other BUs:
+## 10.180.7.44@tcp0,10.180.7.45@tcp0:/cmsfs on /store/lustre type lustre (rw,flock)
+## But Lavinia says it's OK
+##
+# bu-c2d38-07-01 ## No connection
+# bu-c2d38-09-01 ## No connection
+# bu-c2d38-11-01 ## No connection
 bu-c2d38-27-01
 bu-c2d38-29-01
 bu-c2d38-31-01
@@ -5,3 +24,57 @@ bu-c2d38-35-01
 bu-c2d38-37-01
 bu-c2d38-39-01
 bu-c2d38-41-01
+bu-c2d41-07-01
+bu-c2d41-09-01
+bu-c2d41-11-01
+bu-c2d41-13-01
+bu-c2d41-17-01
+bu-c2d41-19-01
+bu-c2d41-21-01
+bu-c2d41-23-01
+bu-c2d41-25-01
+bu-c2d41-27-01
+bu-c2d41-29-01
+bu-c2d41-31-01
+bu-c2d41-35-01
+bu-c2d41-37-01
+bu-c2d41-39-01
+bu-c2d41-41-01
+bu-c2e18-09-01
+bu-c2e18-11-01
+bu-c2e18-13-01
+bu-c2e18-17-01
+bu-c2e18-19-01
+bu-c2e18-21-01
+bu-c2e18-23-01
+bu-c2e18-25-01
+bu-c2e18-27-01 ## DAQ tests
+bu-c2e18-29-01
+bu-c2e18-31-01
+bu-c2e18-35-01
+bu-c2e18-37-01
+bu-c2e18-39-01
+bu-c2e18-41-01
+bu-c2e18-43-01
+# bu-c2f13-21-01 ## Mini DAQ
+# bu-c2f13-23-01 ## Mini DAQ
+# bu-c2f13-25-01 ## Mini DAQ
+# bu-c2f13-27-01 ## Mini DAQ
+# bu-c2f13-29-01 ## Lustre not mounted (event display)
+# bu-c2f13-31-01 ## DQM
+bu-c2f16-09-01
+bu-c2f16-11-01
+bu-c2f16-13-01
+bu-c2f16-17-01
+bu-c2f16-19-01
+bu-c2f16-21-01
+bu-c2f16-23-01
+bu-c2f16-25-01
+bu-c2f16-27-01
+bu-c2f16-29-01
+# bu-c2f16-31-01 ## Lustre not mounted, no data net
+# bu-c2f16-35-01 ## Lustre not mounted
+# bu-c2f16-37-01 ## Lustre not mounted
+# bu-c2f16-39-01 ## Lustre not mounted
+# bu-c2f16-41-01 ## Lustre not mounted
+# bu-c2f16-43-01 ## Lustre not mounted

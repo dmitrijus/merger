@@ -30,6 +30,7 @@ NODES="$(parse_machine_list all_nodes.txt)"
 
 ## Add a missing frozen input
 SIZES="10 20 30 40 50 100 200 300 400 500"
+# 40 MB = 41943040 + 1 B
 FROZEN_BASE=/home/cern/frozen
 for n in $NODES; do
     echo $n
@@ -88,7 +89,7 @@ ssh-copy-id $NODE
 ssh $NODE
 ## Make frozen inputs
 SIZES="10 20 30 40 50 100 200"
-SIZES="2 4 6 8 10 20 40"
+SIZES="1 2 3 4 5 6 8 10 20 30 40"
 FROZEN_BASE=/fff/ramdisk/hwtest/frozen
 mkdir -p $FROZEN_BASE
 for MB in $SIZES; do
@@ -110,3 +111,25 @@ exit
 ## DDN Duesseldorf Lab Monitoring
 ssh user:user@192.168.2.141
 show vd count rate +2
+
+BUS_C2D38=bu-c2d38-[27,29,31,35,37,39,41]-01
+BUS_C2D41=bu-c2d41-[07,09,11,13,17,19,21,23,25,27,29,31,35,37,39,41]-01
+BUS_C2E18=bu-c2e18-[09,11,13,17,19,21,23,25,27,29,31,35,37,39,41,43]-01
+BUS_C2F16=bu-c2f16-[09,11,13,17,19,21,23,25,27,29]-01
+BUS_ALL=$BUS_C2D38,$BUS_C2D41,$BUS_C2E18,$BUS_C2F16
+
+## Setup directories
+wassh $BUS_ALL 'sudo mkdir -p /hwtests; sudo chown veverka /hwtests; mkdir -p /fff/ramdisk/hwtest/{frozen,inputs} /fff/output/hwtest/inputs'
+## Setup frozen files
+wassh $BUS_ALL 'for MB in 1 2 3 4 5 6 8 10 20 30 40; do OF=/fff/ramdisk/hwtest/frozen/inputFile_${MB}MB.dat; dd if=/dev/zero of=$OF bs=1M count=$MB; echo >> $OF; done'
+
+## Generate lists of machines
+BUS_C2D38=$(echo bu-c2d38-{27,29,31,35,37,39,41}-01)
+BUS_C2D41=$(echo bu-c2d41-{07,09,11,13,17,19,21,23,25,27,29,31,35,37,39,41}-01)
+BUS_C2E18=$(echo bu-c2e18-{09,11,13,17,19,21,23,25,27,29,31,35,37,39,41,43}-01)
+BUS_C2F16=$(echo bu-c2f16-{09,11,13,17,19,21,23,25,27,29}-01)
+BUS_ALL=$BUS_C2D38,$BUS_C2D41,$BUS_C2E18,$BUS_C2F16
+echo $BUS_C2D38 $BUS_C2D41 $BUS_C2E18 $BUS_C2F16 | tr ' ' '\n'
+
+## Check Lustre is mounted
+wassh "$BUS_ALL" 'mount | grep lustre'

@@ -57,12 +57,12 @@ def doFiles(RUNNumber, seeds, timeEnd, rate, path_to_make, streamName, contentIn
       fileOutputName =                              "run%d_ls%d_%s_%d.BU%s.dat" % (                       RUNNumber,LSNumber,streamName,seedsRND[0],theBUNumber)
 
       # making a symbolic link (sysadmins don't like it)
-      msg = "ln -s %s %s" %(contentInputFile,fileOutputNameFullPath)
-      os.system(msg)
+      #msg = "ln -s %s %s" %(contentInputFile,fileOutputNameFullPath)
+      #os.system(msg)
       # creating/copying the file (default)
-      #with open(fileOutputNameFullPath, 'w') as thefile:
-      #	 thefile.write(contentInputFile)
-      #thefile.close()
+      with open(fileOutputNameFullPath, 'w') as thefile:
+          thefile.write(contentInputFile)
+      thefile.close()
 
       fileSize = os.path.getsize(fileOutputNameFullPath)
       adler32c=1

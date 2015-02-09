@@ -7,36 +7,37 @@ LIST_PRODUCERS=listProducers.txt
 LIST_MERGERS=$LIST_PRODUCERS
 ALL_NODES=all_nodes.txt
 
-LUMI_LENGTH_MEAN=0.75
+LUMI_LENGTH_MEAN=5
 LUMI_LENGTH_SIGMA=1.0
 
 ## Top-level directory for the test management and control
-MASTER_BASE=/hwtests/master
+MASTER_BASE=/nfshome0/veverka/lib/python/merger
 ## Top level directory for the producer and merger scripts used during the test
 SLAVE_BASE=/hwtests/slave
 ## Folder for the producer inputs
 #FROZEN_BASE=/home/cern/frozen # HDD
 FROZEN_BASE=/fff/ramdisk/hwtest/frozen # RAM disk
 ## Top-level directory for the producer outputs / merger inputs
-#INPUT_BASE=/mnt/cmsfs/benchmark/inputs # Lustre
-INPUT_BASE=/fff/ramdisk/hwtest/inputs # RAM disk
+INPUT_BASE=/fff/output/hwtest/inputs # local HDD
 ## Top-level directory for the merger outputs
-OUTPUT_BASE=/mnt/cmsfs/benchmark
+OUTPUT_BASE=/store/lustre/benchmark
 
-## Provides node_name, count_args, parse_machine_list, echo_and_ssh
+## Provides node_name, count_args, parse_machine_list, echo_and_ssh,
+## echo_and_wait
 source $MASTER_BASE/hwtest/tools.sh
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 function launch_main {
     echo "+ Launching the test ..."
     clean_up
-    #launch_run 100
+    #launch_producers run100.cfg 1
+    launch_run 100
     #clone_and_launch_run 100 101 
     echo "+ ... done. Finished launching the test."
 } # launch_main
 
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 function clean_up {
     kill_previous_mergers_and_producers
     delete_previous_runs
@@ -44,7 +45,7 @@ function clean_up {
 } # clean_up
 
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 function launch_run {
     RUN_NUMBER=$1
     OPTION=${2:-optionC}
@@ -57,7 +58,7 @@ function launch_run {
 } # launch_run
 
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 function clone_and_launch_run {
     SRC_RUN=${1:-100}
     DST_RUN=${2:-101}
@@ -66,7 +67,7 @@ function clone_and_launch_run {
 } # clone_and_launch_run
 
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 function clone_run {
     SRC_RUN=${1}
     DST_RUN=${2}
@@ -77,31 +78,31 @@ function clone_run {
 } # clone_run
 
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 function delete_previous_runs {
     echo "++ Deleting previous runs ..."
-    NODES=$(parse_machine_list $ALL_NODES)
-    for NODE in $NODES; do
-        COMMAND="rm -rf {$INPUT_BASE,$OUTPUT_BASE}/{,*/}*merge*/run*"
-        echo_and_ssh $NODE "$COMMAND"
-    done
+    ## Take just the first machine
+    NODE=$(echo $(parse_machine_list $ALL_NODES) | awk '{print $1}')
+    COMMAND="rm -rf {$INPUT_BASE,$OUTPUT_BASE}/{,*/}*merge*/run*"
+    echo_and_ssh "$NODE" "$COMMAND"
     printf "++ ... done. Finished deleting previous runs.\n\n"
 } # delete_previous_runs
 
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 function delete_previous_code {
     echo "++ Delete previous code ..."
     NODES="$(parse_machine_list $ALL_NODES)"
     for NODE in $NODES; do
         COMMAND="rm -rf $SLAVE_BASE"
-        echo_and_ssh $NODE "$COMMAND"
+        echo_and_ssh $NODE "$COMMAND" 1
     done
-    printf "++ ... done. Finished deleting previous code.\n\n"    
+    echo_and_wait
+    printf "++ ... done. Finished deleting previous code.\n\n"
 } # delete_previous_code
 
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 function kill_previous_mergers_and_producers {
     echo "++ Killing previous mergers and producers ..."
     NODES="$(parse_machine_list $ALL_NODES)"
@@ -116,13 +117,14 @@ function kill_previous_mergers_and_producers {
             fi
 EOF
             )"
-        echo_and_ssh $NODE "$COMMAND"
+        echo_and_ssh $NODE "$COMMAND" 1
     done
+    echo_and_wait
     printf "++ ... done. Finished killing previous mergers and producers.\n\n"
 } # kill_previous_mergers_and_producers
 
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Expects the run number as the first argument,
 # the merging option as the second one
 function launch_mergers {
@@ -195,7 +197,7 @@ function launch_merger {
     mkdir -p $MASTER_BASE/custom
     /bin/cp $MASTER_BASE/{dataFlowMergerInLine,Logging.py} \
         $MASTER_BASE/custom
-    
+
     sed -i "s|dataFlowMerger.conf|$MERGER_BASE/dataFlowMerger.conf|" \
         $MASTER_BASE/custom/{dataFlowMergerInLine,Logging.py}
 
@@ -213,13 +215,14 @@ function launch_merger {
     )   >& $MERGER_BASE/$OUT &
 EOF
     )"
-    
+
     ## Launch the merger
-    echo_and_ssh $NODE "$COMMAND" 1
+    echo_and_ssh $NODE "$COMMAND"
 } # launch_merger
 
 
-#-------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
 # Expects the config file name as the first argument
 # the second argument is to allow for a subdirectory depending on the node
 function launch_producers {
@@ -227,15 +230,26 @@ function launch_producers {
     CONFIG=${1:-mergeConfigForReal}
     DOSUBFOLDER=${2:-0}
     TOTALBUS=$(count_args $(parse_machine_list $LIST_PRODUCERS))
-    for NODE in $(parse_machine_list $LIST_PRODUCERS); do
+    NODES=$(parse_machine_list $LIST_PRODUCERS)
+#     for NODE in $NODES; do
+#         PRODUCER_BASE=$SLAVE_BASE/$NODE/prod
+#         ssh $NODE "mkdir -p $PRODUCER_BASE" 1
+#     done
+#     echo_and_wait
+#     sleep 1
+#     for NODE in $NODES; do
+#         rsync -aW $MASTER_BASE/ $NODE:$PRODUCER_BASE/ &
+#     done
+#     echo_and_wait
+    for NODE in $NODES; do
         PRODUCER_BASE=$SLAVE_BASE/$NODE/prod
-        ssh $NODE "mkdir -p $PRODUCER_BASE"
-        rsync -aW $MASTER_BASE/ $NODE:$PRODUCER_BASE/
         SUBFOLDER=""
         if [ ${DOSUBFOLDER} == "1" ]; then
             SUBFOLDER=${NODE}"/"
         fi
         COMMAND="$(cat << EOF
+        mkdir -p $PRODUCER_BASE ;
+        rsync -aW $MASTER_BASE/ $PRODUCER_BASE/ ;
         nohup $PRODUCER_BASE/hwtest/manageStreams.py \
             --config $PRODUCER_BASE/hwtest/$CONFIG \
             --bu $NODE \
@@ -249,11 +263,12 @@ EOF
         )"
         echo_and_ssh $NODE "$COMMAND" 1
     done
+    echo_and_wait
     printf "++ ... done. Finished launching producers.\n\n"
 } # launch_producers
 
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 function launch_simple_cat {
     ## The number of process per node is passed as the first arg, default=1
     RUN=${1:-300}
@@ -277,7 +292,7 @@ EOF
 } # launch_simple_cat
 
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 function echo_and_rm {
     if [[ ! -z "$@" ]]; then
         printf "+++ Deleting $@ ..."
@@ -286,7 +301,7 @@ function echo_and_rm {
     fi
 } ## echo_and_rm
 
-#-------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 function quote {
     echo "\`"${@}"'"
 } ## quote

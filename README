@@ -1,20 +1,57 @@
+################################################################################
+# folders:
+#    unmergedDATA --> unmerged data files to be merged
+#    unmergedMON  --> json files, it indicates what to merge
+#    unmergedAUX  --> temporal folder, just useful while creating files
+#    merged       --> folder where files will be merged
+# three steps: (1) and (2) happens at the same time
+#    (1) script (doMergingFromList_ForTests) watchs a folder for merging
+#    (2) files are created (manageStreams)
+#    (3) results are analyzed (measurePerf)
+# python version >= 2.6 is needed
+################################################################################
+# first action to start from scratch
+rm -rf unmergedDATA unmergedAUX unmergedMON merged mergeOut.txt *.pyc
 
-- cmsDataFlowMerger.py --> main script to run the merging code
+#(A) --> test
+#(B) --> real study
 
-- cmsActuallMergingFiles --> the real merging functions are here, three options:
+# make input files
+./makeInputFiles.py -p frozen_storage
 
-   option A --> merging unmerged files to different files for different BUs
-   option B --> merging unmerged files to same file for different BUs locking the merged file
-   option C --> merging unmerged files to same file for different BUs without locking the merged file
+################################################################################
+# needed files for the creation of the data: 
+# manageStreams.py, mergeConfig, makeFiles.py, configobj.py
 
-- dataFlowMiniMergerInLine --> script to run interactively the merging code for mini merger
+#(A) only a few lumis and one stream
+./manageStreams.py --config mergeConfigTest    --bu 30 -i frozen_storage -p "$PWD/"
 
-- dataFlowMacroMergerInLine --> script to run interactively the merging code for macro merger
+#(B) 50 lumi ssections, 10 streams with different sizes
+./manageStreams.py --config mergeConfigForReal --bu 30 -i frozen_storage -p "$PWD/"
 
-- dataFlowMerger --> script to run the merging code as a service
+################################################################################
+# needed files for merging:
+#     doMergingFromList_ForTests.py
 
-- Auxiliar files: Daemon.py, Logging.py, configobj.py, logFormat.conf
+#(A) For testing, a lot of output
+./doMergingFromList_ForTests.py --paths_to_watch="unmergedMON/Run*" --debug=99 --expectedBUs=1 --option=0
+./doMergingFromList_ForTests.py --paths_to_watch="unmergedMON/Run*" --debug=99 --expectedBUs=1 --option=1 --bu=30
+./doMergingFromList_ForTests.py --paths_to_watch="unmergedMON/Run*" --debug=99 --expectedBUs=1 --option=2 --bu=30
 
-- dataFlowMergerMini.conf --> example config file for mini merger
+#(B) For real
+./doMergingFromList_ForTests.py --paths_to_watch="unmergedMON/Run*" --expectedBUs=1 --option=0
+./doMergingFromList_ForTests.py --paths_to_watch="unmergedMON/Run*" --expectedBUs=1 --option=1 --bu=30
+./doMergingFromList_ForTests.py --paths_to_watch="unmergedMON/Run*" --expectedBUs=1 --option=2 --bu=30
 
-- dataFlowMergerMacro.conf --> example config file for macro merger
+# paths_to_watch can use a full path
+# this job needs to be killed at some point since it runs forever
+
+###################################################################################
+# needed files for analysis: 
+# measurePerf.py
+
+#(A) for testing
+./measurePerf.py --config mergeConfigTest --file mergeOut.txt
+
+#(B) for real analysis
+./measurePerf.py --config mergeConfigForReal --file mergeOut.txt
