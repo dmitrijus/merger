@@ -56,6 +56,7 @@ Update the config files.
     smPath        = "$MERGED2_BASE"
     dqmPath       = "$MERGED2_BASE"
     ecalPath      = "$MERGED2_BASE"
+    doCheckSum    = "False"
 
     [Misc]
     mergeType     = "mini"
@@ -81,6 +82,7 @@ Update the config files.
     smPath        = "$MERGED2_BASE"
     dqmPath       = "$MERGED2_BASE"
     ecalPath      = "$MERGED2_BASE"
+    doCheckSum    = "False"
 
     [Misc]
     mergeType     = "macro"
