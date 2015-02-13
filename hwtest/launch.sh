@@ -83,7 +83,7 @@ function kill_previous_mergers_and_producers {
     NODES="$(parse_machine_list $ALL_NODES)"
     for NODE in $NODES; do
         COMMAND="$(cat <<'EOF'
-            PROCESS_IDS=$(ps awwx |\
+            PROCESS_IDS=$(ps wwx |\
                 egrep "dataFlowMergerInLine|manageStreams.py" |\
                 egrep -v "grep|bash" |\
                 awk '{print $1}');\
