@@ -21,4 +21,4 @@ OUTPUT_BASE=/store/lustre/benchmark/$USER
 
 RUN=200
 OPTION=optionC
-MACRO_MERGER_NODE=mrg-c2f12-31-01
+MACRO_MERGER_NODE=mrg-c2f12-25-01
