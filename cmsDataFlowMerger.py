@@ -13,6 +13,7 @@ import socket
 import filecmp
 import cmsActualMergingFiles
 import cmsDataFlowCleanUp
+import cmsDataFlowMakeFolders
 import zlibextras
 import requests
 
@@ -446,41 +447,7 @@ def doTheMerging(paths_to_watch, path_eol, mergeType, streamType, debug, outputM
 	    outputBadFolder       = os.path.join(outputMerge,    inputDataFolderString[len(inputDataFolderString)-1], "bad")
 	    outputSMBadFolder     = os.path.join(outputSMMerge,  inputDataFolderString[len(inputDataFolderString)-1], "bad")
 
-	  if not os.path.exists(outputMergedFolder):
-             try:
-                os.makedirs(outputMergedFolder)
-             except OSError, e:
-                 log.warning("Looks like the directory {0} has just been created by someone else...".format(outputMergedFolder))
-	  
-	  if not os.path.exists(outputSMMergedFolder):
-             try:
-                os.makedirs(outputSMMergedFolder)
-             except OSError, e:
-                 log.warning("Looks like the directory {0} has just been created by someone else...".format(outputSMMergedFolder))
-
-	  if not os.path.exists(outputDQMMergedFolder) and mergeType == "macro":
-             try:
-                os.makedirs(outputDQMMergedFolder)
-             except OSError, e:
-                 log.warning("Looks like the directory {0} has just been created by someone else...".format(outputDQMMergedFolder))
-
-	  if not os.path.exists(outputECALMergedFolder) and mergeType == "macro":
-             try:
-                os.makedirs(outputECALMergedFolder)
-             except OSError, e:
-                 log.warning("Looks like the directory {0} has just been created by someone else...".format(outputECALMergedFolder))
-
-	  if not os.path.exists(outputBadFolder):
-             try:
-                os.makedirs(outputBadFolder)
-             except OSError, e:
-                 log.warning("Looks like the directory {0} has just been created by someone else...".format(outputBadFolder))
-	  
-	  if not os.path.exists(outputSMBadFolder):
-             try:
-                os.makedirs(outputSMBadFolder)
-             except OSError, e:
-                 log.warning("Looks like the directory {0} has just been created by someone else...".format(outputSMBadFolder))
+	  cmsDataFlowMakeFolders.doMakeFolders(outputMergedFolder, outputSMMergedFolder, outputDQMMergedFolder, outputECALMergedFolder, outputBadFolder, outputSMBadFolder, mergeType)
 
 	  # reading the list of files in the given folder
           before = dict ([(f, None) for f in os.listdir (inputDataFolder)])
@@ -524,7 +491,7 @@ def doTheMerging(paths_to_watch, path_eol, mergeType, streamType, debug, outputM
           	   shutil.move(inputName,inputNameRename)
           	   if(float(debug) >= 10): log.info("iniFile: {0}".format(afterString[i]))
 	  	   # getting the ini file, just once per stream
-	     	   if (not os.path.exists(outputIniNameToCompare) or (os.path.exists(outputIniNameToCompare) and os.path.getsize(outputIniNameToCompare) == 0)):
+	     	   if (not os.path.exists(outputIniNameToCompare) or (fileIniString[2] != "streamError" and fileIniString[2] != "streamDQMHistograms" and os.path.exists(outputIniNameToCompare) and os.path.getsize(outputIniNameToCompare) == 0)):
 	     	      try:
           		 with open(outputIniNameToCompareTEMP, 'a', 1) as file_object:
           		    fcntl.flock(file_object, fcntl.LOCK_EX)
@@ -543,7 +510,7 @@ def doTheMerging(paths_to_watch, path_eol, mergeType, streamType, debug, outputM
           	      except IOError, e:
           		    log.error("Try to move a .ini to a _TEMP.ini, disappeared under my feet. Carrying on...")
 
-	     	   if (not os.path.exists(outputIniName) or (os.path.exists(outputIniName) and os.path.getsize(outputIniName) == 0)):
+	     	   if (not os.path.exists(outputIniName) or (fileIniString[2] != "streamError" and fileIniString[2] != "streamDQMHistograms" and os.path.exists(outputIniName) and os.path.getsize(outputIniName) == 0)):
 	     	      try:
           		 with open(outputIniNameTEMP, 'a', 1) as file_object:
           		    fcntl.flock(file_object, fcntl.LOCK_EX)
@@ -911,7 +878,7 @@ def doTheMerging(paths_to_watch, path_eol, mergeType, streamType, debug, outputM
 def start_merging(paths_to_watch, path_eol, mergeType, streamType, outputMerge, outputSMMerge, outputDQMMerge, outputECALMerge, doCheckSum, outputEndName, doRemoveFiles, optionMerging, esServerUrl, esIndexName, numberOfShards, numberOfReplicas, debug):
 
     triggerMergingThreshold = 0.80
-    completeMergingThreshold = 0.99
+    completeMergingThreshold = 1.0
 
     if mergeType != "mini" and mergeType != "macro" and mergeType != "auto":
        msg = "Wrong type of merging: %s" % mergeType

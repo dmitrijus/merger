@@ -10,6 +10,7 @@ import multiprocessing
 import time,datetime
 import random
 import math
+import json
 
 start_time = datetime.datetime.now()
 
@@ -73,13 +74,20 @@ def main():
         theInputfile.close()
 
     init(options, params)
+    
+    theNumberOfFilesPerLS = 10
+    theNInput = 1000
+    theNOutput = 10
 
     for ls in range(lumiSections):
        processs = []
 
+       create_ls_files(options, params, ls, theNumberOfFilesPerLS, theNInput)
+
        now = datetime.datetime.now()
 
        print now.strftime("%H:%M:%S"), ": writing ls(%d)" % (ls)
+
        for i in range(filesNb):
           # Produce files every lumi_length_mean seconds with random flutuation
           sleep_time = seconds_to_sleep(5, lumi_length_mean, lumi_length_sigma)
@@ -87,7 +95,8 @@ def main():
           process = multiprocessing.Process(
               target = launch_file_making,
               args = [streamName, contentInputFile[i], ls, runNumber, theBUId,
-                      thePath, theTotalBUs, sleep_time]
+                      thePath, theTotalBUs, sleep_time, 
+		      theNumberOfFilesPerLS, theNInput, theNOutput]
               )
           process.start()
 
@@ -168,10 +177,13 @@ def total_seconds(tdelta):
 
 #______________________________________________________________________________
 def launch_file_making(streamName, contentInputFile, lumiSections, runNumber,
-                       theBUId, thePath, theTotalBUs, sleep_time):
+                       theBUId, thePath, theTotalBUs, sleep_time, 
+		       theNumberOfFilesPerLS, theNInput, theNOutput):
     time.sleep(sleep_time)
     createFiles(streamName, contentInputFile, lumiSections, runNumber,
-                theBUId, thePath, theTotalBUs)
+                theBUId, thePath, theTotalBUs, 0.0, 999, -1,
+                theNumberOfFilesPerLS, theNInput, theNOutput)
+
 ## launch_file_making
 
 
@@ -198,6 +210,25 @@ def create_ini_files(options, params):
            thefile.write('0' * 10)
            thefile.write("\n")
 ## create_ini_files
+
+#______________________________________________________________________________
+def create_ls_files(options, params, ls, numberOfFilesPerLS, nInput):
+    path_to_make = options.Path
+    if path_to_make == None:
+       path_to_make = ""
+    RUNNumber = int(params['Streams']['runnumber'])
+    filesNb = int(params['Streams']['number'])
+    theTotalBUs = 1
+    if (options.totalBUs != None):
+       theTotalBUs = options.totalBUs
+
+    fileLSNameFullPath = "%sunmergedMON/run%d/run%d_ls%d_EoLS.jsn" % (path_to_make,RUNNumber,RUNNumber,ls)
+    try:
+       with open(fileLSNameFullPath, 'w') as theFileLSName:
+    	  theFileLSName.write(json.dumps({'data': (nInput*int(numberOfFilesPerLS), int(numberOfFilesPerLS)*int(theTotalBUs), nInput*int(numberOfFilesPerLS)*int(theTotalBUs))}))
+    except OSError, e:
+       print "Looks like the file " + fileLSNameFullPath + " has just been created by someone else..."
+## create_ls_files
 
 #______________________________________________________________________________
 def create_data_dir(options, params):
