@@ -38,7 +38,7 @@ function clean_up {
 function launch_run {
     RUN_NUMBER=$1
     OPTION=${2:-optionC}
-    MY_MACRO_MERGER_NODE=${3:-mrg-c2f12-31-01}
+    MY_MACRO_MERGER_NODE=${3:-mrg-c2f12-25-01}
     CONFIG_FILE=run${RUN_NUMBER}.cfg
     DO_SUBFOLDER=1
     launch_merger $RUN_NUMBER $OPTION $MY_MACRO_MERGER_NODE macro
