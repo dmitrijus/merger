@@ -7,6 +7,7 @@ from makeFiles import createFiles
 import os, sys
 from optparse import OptionParser
 import multiprocessing
+from multiprocessing.pool import ThreadPool
 import time,datetime
 import random
 import math
@@ -79,8 +80,9 @@ def main():
     theNInput = 1000
     theNOutput = 10
 
+    thePool = ThreadPool(30)
+
     for ls in range(lumiSections):
-       processs = []
 
        create_ls_files(options, params, ls, theNumberOfFilesPerLS, theNInput)
 
@@ -92,16 +94,19 @@ def main():
           # Produce files every lumi_length_mean seconds with random flutuation
           sleep_time = seconds_to_sleep(5, lumi_length_mean, lumi_length_sigma)
           streamName =  params['Streams']['name' + str(i)]
-          process = multiprocessing.Process(
-              target = launch_file_making,
-              args = [streamName, contentInputFile[i], ls, runNumber, theBUId,
+
+          thePool.apply_async(launch_file_making,
+                      [streamName, contentInputFile[i], ls, runNumber, theBUId,
                       thePath, theTotalBUs, sleep_time, 
 		      theNumberOfFilesPerLS, theNInput, theNOutput]
-              )
-          process.start()
+                              )
 
        print now.strftime("%H:%M:%S"), ": finished LS", ls, ", exiting..."
        time.sleep(lumi_length_mean)
+
+       thePool.close()
+       thePool.join()
+
     now = datetime.datetime.now()
     print now.strftime("%H:%M:%S"), ": finished, exiting..."
 ## main
