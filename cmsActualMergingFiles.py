@@ -177,6 +177,10 @@ def mergeFilesA(inpSubFolder, outSubFolder, outputMergedFolder, outputDQMMergedF
          if(float(debug) > 20): log.info("running {0}".format(msg))
          if(goodFiles > 0):
             os.system(msg)
+            try:
+                fileSize = os.path.getsize(outMergedFileFullPath)
+            except:
+                pass
          else:
             open(outMergedFileFullPath, 'w').close()
 
